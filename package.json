@@ -1,0 +1,17 @@
+{
+  "name": "serverless-tweet-scheduler",
+  "version": "1.0.0",
+  "main": "handler.js",
+  "repository": "https://github.com/JaneJeon/serverless-tweet-scheduler.git",
+  "author": "Jane Jeon",
+  "license": "Apache-2.0",
+  "private": false,
+  "dependencies": {
+    "aws-sdk": "^2.291.0",
+    "dotenv": "^6.0.0"
+  },
+  "scripts": {
+    "deploy": "serverless deploy --verbose",
+    "upload": "aws s3 sync TODO:"
+  }
+}

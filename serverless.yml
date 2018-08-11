@@ -1,0 +1,54 @@
+service: tweet-scheduler
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+
+package:
+  exclude:
+    - public/**
+    - events/**
+
+functions:
+  web: # TODO: https://serverless.com/framework/docs/providers/aws/events/apigateway/
+  tweet-scrape:
+    events:
+      - schedule: rate(1 minute)
+  tweet-post:
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - TweetQueue
+              - Arn
+
+resources:
+  Resources:
+    WebsiteBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: tweet-scheduler # <-- replace with your own bucket name!
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: error.html
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: WebsiteBucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Principal: "*"
+              Resource:
+                Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - Ref: WebsiteBucket
+                    - /*
+    TweetQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: TweetQueue
