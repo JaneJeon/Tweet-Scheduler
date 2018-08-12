@@ -3,52 +3,104 @@ service: tweet-scheduler
 provider:
   name: aws
   runtime: nodejs8.10
+  memorySize: 128
+  timeout: 3
+  logRetentionInDays: 14
+  environment: ${file(./config/jwt-secret.yml)}
+
+config: ${file(./config/aws.yml)}
+
+custom:
+  fullstack:
+    bucketName: ${self:config.siteBucket}
+    distributionFolder: src/public
+    clientCommand: browserify src/lib/client.js > src/public/client.js
+    logging:
+      bucket: ${self:config.logBucket}
+  prune:
+    automatic: true
+    number: 3
+  alerts:
+    topics:
+      alarm:
+        topic: ${self:service}-${opt:stage}-alerts-alarm
+        notifications:
+          - protocol: email
+            endpoint: ${self:config.notificationEmail}
+
+alerts:
+  alarms:
+    - functionErrors
 
 package:
-  exclude:
-    - public/**
-    - events/**
+  individually: true
 
 functions:
-  web: # TODO: https://serverless.com/framework/docs/providers/aws/events/apigateway/
-  tweet-scrape:
+  signIn:
+    handler: src/functions/user.signIn
+    events:
+      - http:
+          method: POST
+          path: /signIn
+  authorize:
+    handler: src/functions/user.authorize
+  getTweets:
+    handler: src/functions/web.getTweets
+    events:
+      - http:
+          method: GET
+          path: /tweets
+          authorizer: authorize
+  scheduleTweet:
+    handler: src/functions/web.scheduleTweet
+    events:
+      - http:
+          method: POST
+          path: /tweets
+          authorizer: authorize
+  modifyTweet:
+    handler: src/functions/web.modifyTweet
+    events:
+      - http:
+          method: PUT
+          path: /tweets/{tweetId}
+          authorizer: authorize
+  deleteTweet:
+    handler: src/functions/web.deleteTweet
+    events:
+      - http:
+          method: DELETE
+          path: /tweets/{tweetId}
+          authorizer: authorize
+  scrapeTweets:
+    handler: src/functions/scrapeTweets.handler
     events:
       - schedule: rate(1 minute)
-  tweet-post:
+    memorySize: 512
+    timeout: 60
+  postTweets:
+    handler: src/functions/postTweets.handler
     events:
       - sqs:
           arn:
             Fn::GetAtt:
               - TweetQueue
               - Arn
+    timeout: 60
 
 resources:
   Resources:
-    WebsiteBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: tweet-scheduler # <-- replace with your own bucket name!
-        AccessControl: PublicRead
-        WebsiteConfiguration:
-          IndexDocument: index.html
-          ErrorDocument: error.html
-    BucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        Bucket:
-          Ref: WebsiteBucket
-        PolicyDocument:
-          Statement:
-            - Effect: Allow
-              Action: s3:GetObject
-              Principal: "*"
-              Resource:
-                Fn::Join:
-                  - ""
-                  - - "arn:aws:s3:::"
-                    - Ref: WebsiteBucket
-                    - /*
     TweetQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: TweetQueue
+        QueueName: tweet-queue-${opt:stage}
+
+plugins:
+  - serverless-export-env
+  - serverless-prune-plugin
+  - serverless-plugin-optimize
+  - serverless-plugin-aws-alerts
+  - serverless-dynamodb-autoscaling
+  - fullstack-serverless
+  - serverless-offline
+  - serverless-dynamodb-local

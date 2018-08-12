@@ -1,4 +1,7 @@
 node_modules
-.serverless
-.env
-/README.md
+.*
+!.gitignore
+config/aws.yml
+config/firebase.json
+config/jwt-secret.yml
+src/public/client.js
