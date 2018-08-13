@@ -21,8 +21,5 @@
     "serverless-plugin-aws-alerts": "^1.2.4",
     "serverless-plugin-optimize": "^3.1.1-rc.1",
     "serverless-prune-plugin": "^1.3.1"
-  },
-  "scripts": {
-    "env": "serverless export-env"
   }
 }

@@ -1,17 +1,17 @@
 const config = require("../../config/frontend"),
   signedIn = () => {
-    document.getElementById("signin").style.display = "none"
-    document.title = session.getItem("displayName")
+    document.getElementById("signIn").style.display = "none"
+    document.title = window.localStorage.getItem("displayName")
   }
 
-if (session.getItem("userId")) signedIn()
+if (window.localStorage.getItem("userId")) signedIn()
 else {
   firebase.initializeApp(config.firebase)
 
-  document.getElementById("signin").onclick = () =>
+  document.getElementById("signIn").onclick = () =>
     firebase
       .auth()
-      .signInWithPopup(new firebase.auth.TwitterAuthProvider())
+      .signInViaPopup(new firebase.auth.TwitterAuthProvider())
       .then(result => {
         window.localStorage.setItem("displayName", result.user.displayname)
         /* userId => result.user.uid

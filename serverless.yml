@@ -2,13 +2,16 @@ service: tweet-scheduler
 
 provider:
   name: aws
+  stage: dev
   runtime: nodejs8.10
   memorySize: 128
   timeout: 3
   logRetentionInDays: 14
   environment:
-    ${file(./config/backend.yml):environment}
-    TWEETS_TABLE: ${self:service}-${opt:stage}
+    JWT_SECRET: ${self:custom.env.JWT_SECRET}
+    CONSUMER_KEY: ${self:custom.env.CONSUMER_KEY}
+    CONSUMER_SECRET: ${self:custom.env.CONSUMER_SECRET}
+    TWEETS_TABLE: ${self:service}-${self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -82,7 +85,7 @@ resources:
     TweetsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${env:TWEETS_TABLE}
+        TableName: ${self:provider.environment:TWEETS_TABLE}
         AttributeDefinitions:
           - AttributeName: tweetId
             AttributeType: S
@@ -127,9 +130,10 @@ resources:
     TweetQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: ${self:service}-${opt:stage}-queue
+        QueueName: ${self:service}-${self:provider.stage}-queue
     LogBucket:
       Type: AWS::S3::Bucket
+      BucketName: ${self:custom.config.logBucket}
       Properties:
         AccessControl: LogDeliveryWrite
         LifeCycleConfiguration:
@@ -144,11 +148,11 @@ resources:
           - LogBucket
           - DomainName
 
-config: ${file(./config/backend.yml):${opt:stage}}
-
 custom:
+  env: ${file(./config/backend.yml):environment}
+  config: ${file(./config/backend.yml):${self:provider.stage}}
   fullstack:
-    bucketName: ${self:config.siteBucket}
+    bucketName: ${self:custom.config.siteBucket}
     distributionFolder: src/public
     clientCommand: browserify src/lib/client.js > src/public/client.js
     logging:
@@ -172,10 +176,10 @@ custom:
   alerts:
     topics:
       alarm:
-        topic: ${self:service}-${opt:stage}-alerts-alarm
+        topic: ${self:service}-${self:provider.stage}-alerts-alarm
         notifications:
           - protocol: email
-            endpoint: ${self:config.notificationEmail}
+            endpoint: ${self:custom.config.notificationEmail}
 
 alerts:
   alarms:
