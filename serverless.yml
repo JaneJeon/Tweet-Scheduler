@@ -6,67 +6,56 @@ provider:
   memorySize: 128
   timeout: 3
   logRetentionInDays: 14
-  environment: ${file(./config/jwt-secret.yml)}
-
-config: ${file(./config/aws.yml)}
-
-custom:
-  fullstack:
-    bucketName: ${self:config.siteBucket}
-    distributionFolder: src/public
-    clientCommand: browserify src/lib/client.js > src/public/client.js
-    logging:
-      bucket: ${self:config.logBucket}
-  prune:
-    automatic: true
-    number: 3
-  alerts:
-    topics:
-      alarm:
-        topic: ${self:service}-${opt:stage}-alerts-alarm
-        notifications:
-          - protocol: email
-            endpoint: ${self:config.notificationEmail}
-
-alerts:
-  alarms:
-    - functionErrors
+  environment:
+    ${file(./config/backend.yml):environment}
+    TWEETS_TABLE: ${self:service}-${opt:stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:Scan
+      Resource:
+        Fn::GetAtt:
+          - TweetsTable
+          - Arn
 
 package:
   individually: true
 
 functions:
   signIn:
-    handler: src/functions/user.signIn
+    handler: src/functions/signIn.handler
     events:
       - http:
           method: POST
           path: /signIn
   authorize:
-    handler: src/functions/user.authorize
+    handler: src/functions/authorize.handler
   getTweets:
-    handler: src/functions/web.getTweets
+    handler: src/functions/getTweets.handler
     events:
       - http:
           method: GET
           path: /tweets
           authorizer: authorize
-  scheduleTweet:
-    handler: src/functions/web.scheduleTweet
+  createTweet:
+    handler: src/functions/createTweet.handler
     events:
       - http:
           method: POST
           path: /tweets
           authorizer: authorize
-  modifyTweet:
-    handler: src/functions/web.modifyTweet
+  updateTweet:
+    handler: src/functions/updateTweet.handler
     events:
       - http:
           method: PUT
           path: /tweets/{tweetId}
           authorizer: authorize
   deleteTweet:
-    handler: src/functions/web.deleteTweet
+    handler: src/functions/deleteTweet.handler
     events:
       - http:
           method: DELETE
@@ -90,10 +79,107 @@ functions:
 
 resources:
   Resources:
+    TweetsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${env:TWEETS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: tweetId
+            AttributeType: S
+          - AttributeName: tweetBody
+            AttributeType: S
+          - AttributeName: tweetTime
+            AttributeType: N
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: accessToken
+            AttributeType: S
+          - AttributeName: accessTokenSecret
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tweetId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: userId-global-index
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: INCLUDE
+              NonKeyAttributes:
+                - tweetBody
+                - tweetTime
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+          - IndexName: tweetTime-global-index
+            KeySchema:
+              - AttributeName: tweetTime
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
     TweetQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: tweet-queue-${opt:stage}
+        QueueName: ${self:service}-${opt:stage}-queue
+    LogBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: LogDeliveryWrite
+        LifeCycleConfiguration:
+          Rules:
+            - Transitions:
+                - StorageClass: STANDARD_IA
+                  TransitionInDays: 30
+  Outputs:
+    LogBucketURL:
+      Value:
+        Fn::GetAtt:
+          - LogBucket
+          - DomainName
+
+config: ${file(./config/backend.yml):${opt:stage}}
+
+custom:
+  fullstack:
+    bucketName: ${self:config.siteBucket}
+    distributionFolder: src/public
+    clientCommand: browserify src/lib/client.js > src/public/client.js
+    logging:
+      bucket: LogBucketURL
+  capacities:
+    - table: TweetsTable
+      index:
+        - userId-global-index
+        - tweetTime-global-index
+      read:
+        minimum: 1
+        maximum: 5
+        usage: 0.75
+      write:
+        minimum: 1
+        maximum: 5
+        usage: 0.75
+  prune:
+    automatic: true
+    number: 3
+  alerts:
+    topics:
+      alarm:
+        topic: ${self:service}-${opt:stage}-alerts-alarm
+        notifications:
+          - protocol: email
+            endpoint: ${self:config.notificationEmail}
+
+alerts:
+  alarms:
+    - functionErrors
 
 plugins:
   - serverless-export-env

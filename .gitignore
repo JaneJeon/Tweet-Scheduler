@@ -1,7 +1,6 @@
 node_modules
 .*
 !.gitignore
-config/aws.yml
-config/firebase.json
-config/jwt-secret.yml
+config/backend.yml
+config/frontend.js
 src/public/client.js

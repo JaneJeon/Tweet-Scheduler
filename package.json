@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "aws-sdk": "^2.291.0",
+    "serverless": "^1.30.0",
     "fullstack-serverless": "^0.5.6",
     "serverless-dynamodb-autoscaling": "^0.6.2",
     "serverless-dynamodb-local": "^0.2.30",

@@ -1,0 +1,12 @@
+dev:
+  siteBucket: my-static-site-dev
+  logBucket: my-log-bucket-dev
+  notificationEmail: me@example.com
+prod:
+  siteBucket: my-static-site-prod
+  logBucket: my-log-bucket-prod
+  notificationEmail: super-serious-alerts@example.com
+environment:
+  JWT_SECRET: secret-cat
+  CONSUMER_KEY: foo
+  CONSUMER_SECRET: bar

@@ -1,3 +1,0 @@
-siteBucket: S3-bucket-where-your-static-files-are-hosted
-logBucket: S3-bucket-where-your-acces-logs-are-hosted
-notificationEmail: me@example.com

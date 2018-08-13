@@ -1,4 +1,4 @@
-const session = window.localStorage,
+const config = require("../../config/frontend"),
   signedIn = () => {
     document.getElementById("signin").style.display = "none"
     document.title = session.getItem("displayName")
@@ -6,17 +6,17 @@ const session = window.localStorage,
 
 if (session.getItem("userId")) signedIn()
 else {
-  firebase.initializeApp(require("../../config/firebase.json"))
+  firebase.initializeApp(config.firebase)
 
   document.getElementById("signin").onclick = () =>
     firebase
       .auth()
       .signInWithPopup(new firebase.auth.TwitterAuthProvider())
       .then(result => {
-        session.setItem("accessToken", result.credential.accessToken)
-        session.setItem("accessTokenSecret", result.credential.secret)
-        session.setItem("displayName", result.user.displayName)
-        session.setItem("userId", result.user.uid)
+        window.localStorage.setItem("displayName", result.user.displayname)
+        /* userId => result.user.uid
+         * accessToken => result.credential.accessToken
+         * accessTokenSecret => result.credential.secret */
 
         signedIn()
       })

@@ -1,17 +1,6 @@
 const jwt = require("jsonwebtoken")
 
-class InvalidCredentialsError extends Error {}
-
-exports.signIn = async (event, context) => {
-  const { userId, accessToken, accessTokenSecret } = JSON.parse(event.body)
-
-  if (!(userId && accessToken && accessTokenSecret))
-    throw new InvalidCredentialsError()
-
-  return jwt.sign(event.body, process.env.JWT_SECRET)
-}
-
-exports.authorize = async (event, context) => {
+exports.handler = async (event, context) => {
   try {
     // the "authorization" is mostly here to validate the JWT
     const decoded = jwt.verify(event.authorizationToken, process.env.JWT_SECRET)
