@@ -1,5 +1,9 @@
-const Twitter = require("twitter")
+const { post } = require("../controllers/twitter")
 
 exports.handler = async (event, context) => {
-  const { time } = event // e.g. "2015-10-08T16:53:06Z"
+  const { Records } = event // e.g. [{ body: "{\"foo\":\"bar\"}" }]
+
+  for (const record of Records) {
+    const { body } = record
+  }
 }

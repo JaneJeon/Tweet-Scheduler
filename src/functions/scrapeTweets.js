@@ -1,7 +1,5 @@
-exports.handler = async (event, context) => {
-  const { Records } = event // e.g. [{ body: "{\"foo\":\"bar\"}" }]
+const { scrapeTweets } = require("../models/tweet")
 
-  for (const record of Records) {
-    const { body } = record
-  }
+exports.handler = async (event, context) => {
+  const { time } = event // e.g. "2015-10-08T16:53:06Z"
 }

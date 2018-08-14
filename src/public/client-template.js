@@ -6,17 +6,18 @@ const config = require("../../config/frontend"),
 
 if (window.localStorage.getItem("userId")) signedIn()
 else {
+  /*global firebase*/
   firebase.initializeApp(config.firebase)
 
   document.getElementById("signIn").onclick = () =>
     firebase
       .auth()
-      .signInViaPopup(new firebase.auth.TwitterAuthProvider())
+      .signInWithPopup(new firebase.auth.TwitterAuthProvider())
       .then(result => {
         window.localStorage.setItem("displayName", result.user.displayname)
         /* userId => result.user.uid
-         * accessToken => result.credential.accessToken
-         * accessTokenSecret => result.credential.secret */
+       * accessToken => result.credential.accessToken
+       * accessTokenSecret => result.credential.secret */
 
         signedIn()
       })

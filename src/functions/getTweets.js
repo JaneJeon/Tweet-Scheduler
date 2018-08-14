@@ -1,5 +1,10 @@
-const Tweet = require("../models/tweet")
+const { decode } = require("../controllers/cookie"),
+  { getTweets } = require("../models/tweet")
 
 exports.handler = async (event, context) => {
-  const user = JSON.parse(event.requestContext.authorizer)
+  try {
+    const { userId } = decode(event)
+  } catch (err) {
+    return { statusCode: 401 }
+  }
 }
