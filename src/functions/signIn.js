@@ -1,6 +1,6 @@
-const { ensureNotEmpty } = require("../controllers/input"),
-  { verify } = require("../controllers/twitter"),
-  { sign } = require("../controllers/cookie")
+const { ensureNotEmpty } = require("../lib/input"),
+  { verify } = require("../lib/twitter"),
+  { sign } = require("../lib/cookie")
 
 exports.handler = async (event, context) => {
   try {
@@ -20,6 +20,9 @@ exports.handler = async (event, context) => {
       }
     }
   } catch (err) {
-    return { statusCode: 401, body: err.message }
+    return {
+      statusCode: 401,
+      body: "Could not authenticate with the given credentials"
+    }
   }
 }

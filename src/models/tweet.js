@@ -7,6 +7,7 @@ const ensureValidTweet = (tweetBody, tweetTime) => {
     throw new Error("Invalid tweet parameter(s)")
 }
 
+// returns the tweet Id, and nothing else
 exports.createTweet = async (
   userId,
   accessToken,
@@ -27,7 +28,7 @@ exports.createTweet = async (
 
   await db.put({ TableName: process.env.TWEETS_TABLE, Item: tweet }).promise()
 
-  return tweet
+  return tweet.tweetId
 }
 
 exports.getTweets = async userId =>

@@ -1,5 +1,5 @@
-const { decode } = require("../controllers/cookie"),
-  { ensureNotEmpty } = require("../controllers/input"),
+const { decode } = require("../lib/cookie"),
+  { ensureNotEmpty } = require("../lib/input"),
   { createTweet } = require("../models/tweet")
 
 exports.handler = async (event, context) => {

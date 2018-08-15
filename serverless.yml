@@ -7,6 +7,8 @@ provider:
   memorySize: 128
   timeout: 3
   logRetentionInDays: 14
+  deploymentBucket:
+    serverSideEncryption: AES256
   environment:
     JWT_SECRET: ${self:custom.env.JWT_SECRET}
     CONSUMER_KEY: ${self:custom.env.CONSUMER_KEY}
@@ -26,6 +28,8 @@ provider:
           - Arn
 
 package:
+  include:
+    - config/**
   individually: true
 
 functions:
@@ -59,28 +63,28 @@ functions:
       - http:
           method: DELETE
           path: /tweets/{tweetId}
-  scrapeTweets:
-    handler: src/functions/scrapeTweets.handler
-    events:
-      - schedule: rate(1 minute)
-    memorySize: 512
-    timeout: 60
-  postTweets:
-    handler: src/functions/postTweets.handler
-    events:
-      - sqs:
-          arn:
-            Fn::GetAtt:
-              - TweetQueue
-              - Arn
-    timeout: 60
+  # scrapeTweets:
+  #   handler: src/functions/scrapeTweets.handler
+  #   events:
+  #     - schedule: rate(1 minute)
+  #   memorySize: 512
+  #   timeout: 60
+  # postTweets:
+  #   handler: src/functions/postTweets.handler
+  #   events:
+  #     - sqs:
+  #         arn:
+  #           Fn::GetAtt:
+  #             - TweetQueue
+  #             - Arn
+  #   timeout: 60
 
 resources:
   Resources:
     TweetsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment:TWEETS_TABLE}
+        TableName: ${self:provider.environment.TWEETS_TABLE}
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
@@ -109,20 +113,21 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-    TweetQueue:
-      Type: AWS::SQS::Queue
-      Properties:
-        QueueName: ${self:service}-${self:provider.stage}-queue
+    # TweetQueue:
+    #   Type: AWS::SQS::Queue
+    #   Properties:
+    #     QueueName: ${self:service}-${self:provider.stage}-queue
     LogBucket:
       Type: AWS::S3::Bucket
-      BucketName: ${self:custom.config.logBucket}
       Properties:
+        BucketName: ${self:custom.config.logBucket}
         AccessControl: LogDeliveryWrite
-        LifeCycleConfiguration:
+        LifecycleConfiguration:
           Rules:
             - Transitions:
                 - StorageClass: STANDARD_IA
                   TransitionInDays: 30
+              Status: Enabled
 
 custom:
   env: ${file(./config/backend.yml):environment}
@@ -130,7 +135,7 @@ custom:
   fullstack:
     bucketName: ${self:custom.config.siteBucket}
     distributionFolder: src/public
-    clientCommand: browserify src/public/client-template.js > src/public/client.js
+    clientCommand: node_modules/.bin/browserify src/public/client-template.js > src/public/client.js
     logging:
       bucket:
         Fn::GetAtt:
@@ -151,20 +156,19 @@ custom:
   prune:
     automatic: true
     number: 3
-  alerts:
-    topics:
-      alarm:
-        topic: ${self:service}-${self:provider.stage}-alerts-alarm
-        notifications:
-          - protocol: email
-            endpoint: ${self:custom.config.notificationEmail}
+  # alerts:
+  #   topics:
+  #     alarm:
+  #       topic: ${self:service}-${self:provider.stage}-alerts-alarm
+  #       notifications:
+  #         - protocol: email
+  #           endpoint: ${self:custom.config.notificationEmail}
 
-alerts:
-  alarms:
-    - functionErrors
+# alerts:
+#   alarms:
+#     - functionErrors
 
 plugins:
-  - serverless-export-env
   - serverless-prune-plugin
   - serverless-plugin-optimize
   - serverless-plugin-aws-alerts
