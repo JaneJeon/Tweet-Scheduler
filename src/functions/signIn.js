@@ -1,13 +1,13 @@
-const twitter = require("../controllers/twitter"),
+const { ensureNotEmpty } = require("../controllers/input"),
+  { verify } = require("../controllers/twitter"),
   { sign } = require("../controllers/cookie")
 
 exports.handler = async (event, context) => {
-  const { userId, accessToken, accessTokenSecret } = JSON.parse(event.body)
-
   try {
-    if (userId && accessToken && accessTokenSecret)
-      await twitter.verify(accessToken, accessTokenSecret)
-    else throw new Error()
+    const { userId, accessToken, accessTokenSecret } = JSON.parse(event.body)
+    ensureNotEmpty(userId, accessToken, accessTokenSecret)
+
+    await verify(accessToken, accessTokenSecret)
 
     return {
       statusCode: 200,
@@ -20,6 +20,6 @@ exports.handler = async (event, context) => {
       }
     }
   } catch (err) {
-    return { statusCode: 401 }
+    return { statusCode: 401, body: err.message }
   }
 }

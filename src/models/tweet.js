@@ -2,26 +2,28 @@ const AWS = require("aws-sdk"),
   db = new AWS.DynamoDB.DocumentClient(),
   uuid = require("uuid/v4")
 
-const validate = tweet => {
-  if (
-    !tweet.tweetBody ||
-    tweet.tweetBody > 280 ||
-    tweet.tweetTime <= Math.round(Date.now() / 1000)
-  )
-    throw new Exception()
+const ensureValidTweet = (tweetBody, tweetTime) => {
+  if (tweetBody > 280 || tweetTime <= Math.round(Date.now() / 1000))
+    throw new Error("Invalid tweet parameter(s)")
 }
 
-exports.createTweet = async (user, tweetBody, tweetTime) => {
-  const tweet = {
-    userId: user.userId,
-    tweetId: uuid(),
-    tweetTime: tweetTime,
-    tweetBody: tweetBody,
-    accessToken: user.accessToken,
-    accessTokenSecret: user.accessTokenSecret
-  }
+exports.createTweet = async (
+  userId,
+  accessToken,
+  accessTokenSecret,
+  tweetBody,
+  tweetTime
+) => {
+  ensureValidTweet(tweetBody, tweetTime)
 
-  validate()
+  const tweet = {
+    userId: userId,
+    tweetId: uuid(),
+    tweetBody: tweetBody,
+    tweetTime: tweetTime,
+    accessToken: accessToken,
+    accessTokenSecret: accessTokenSecret
+  }
 
   await db.put({ TableName: process.env.TWEETS_TABLE, Item: tweet }).promise()
 
@@ -29,17 +31,17 @@ exports.createTweet = async (user, tweetBody, tweetTime) => {
 }
 
 exports.getTweets = async userId =>
-  db
+  (await db
     .query({
       TableName: process.env.TWEETS_TABLE,
       KeyConditionExpression: "userId = :id",
       ExpressionAttributeValues: { ":id": userId },
-      ProjectionExpression: "tweetId, tweetTime, tweetBody"
+      ProjectionExpression: "tweetId, tweetBody, tweetTime"
     })
-    .promise()
+    .promise()).Items
 
 exports.updateTweet = async (userId, tweetId, tweetBody, tweetTime) => {
-  validate()
+  ensureValidTweet(tweetBody, tweetTime)
 
   return db
     .update({
@@ -60,9 +62,11 @@ exports.deleteTweet = async (userId, tweetId) =>
     .promise()
 
 exports.scrapeTweets = async time =>
-  db.query({
-    TableName: process.env.TWEETS_TABLE,
-    IndexName: process.env.TWEET_TIME_INDEX,
-    KeyConditionExpression: "tweetTime = :time",
-    ExpressionAttributeValues: { ":time": time }
-  })
+  (await db
+    .query({
+      TableName: process.env.TWEETS_TABLE,
+      IndexName: process.env.TWEET_TIME_INDEX,
+      KeyConditionExpression: "tweetTime = :time",
+      ExpressionAttributeValues: { ":time": time }
+    })
+    .promise()).Items

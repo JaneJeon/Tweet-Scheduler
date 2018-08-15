@@ -1,11 +1,18 @@
 const { decode } = require("../controllers/cookie"),
+  { ensureNotEmpty } = require("../controllers/input"),
   { updateTweet } = require("../models/tweet")
 
 exports.handler = async (event, context) => {
   try {
     const { userId } = decode(event),
-      tweetId = event.pathParameters.tweetId
+      tweetId = event.pathParameters.tweetId,
+      { tweetBody, tweetTime } = JSON.parse(event.body)
+    ensureNotEmpty(userId, tweetId, tweetBody, tweetTime)
+
+    await updateTweet(userId, tweetId, tweetBody, tweetTime)
+
+    return { statusCode: 200 }
   } catch (err) {
-    return { statusCode: 401 }
+    return { statusCode: 401 || err.statusCode, body: err.message }
   }
 }

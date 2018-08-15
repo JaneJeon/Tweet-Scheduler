@@ -1,5 +1,10 @@
 const { scrapeTweets } = require("../models/tweet")
 
 exports.handler = async (event, context) => {
-  const { time } = event // e.g. "2015-10-08T16:53:06Z"
+  // round to the nearest minute
+  const tweets = await scrapeTweets(
+    Math.round(new Date(event.time) / 60000) * 60
+  )
+
+  // TODO:
 }

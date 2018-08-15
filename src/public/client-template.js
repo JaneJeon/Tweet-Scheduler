@@ -6,7 +6,6 @@ const config = require("../../config/frontend"),
 
 if (window.localStorage.getItem("userId")) signedIn()
 else {
-  /*global firebase*/
   firebase.initializeApp(config.firebase)
 
   document.getElementById("signIn").onclick = () =>
