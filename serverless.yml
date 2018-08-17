@@ -38,7 +38,13 @@ functions:
     events:
       - http:
           method: POST
-          path: /signIn
+          path: /session
+  logout:
+    handler: src/functions/logout.handler
+    events:
+      - http:
+          method: DELETE
+          path: /session
   getTweets:
     handler: src/functions/getTweets.handler
     events:
@@ -135,7 +141,8 @@ custom:
   fullstack:
     bucketName: ${self:custom.config.siteBucket}
     distributionFolder: src/public
-    clientCommand: node_modules/.bin/browserify src/public/client-template.js > src/public/client.js
+    indexDocument: login.html
+    clientCommand: node_modules/.bin/browserify src/client/index.js | node_modules/.bin/uglifyjs > src/public/client.js
     logging:
       bucket:
         Fn::GetAtt:

@@ -13,7 +13,7 @@ exports.verify = (accessToken, accessTokenSecret) =>
     client(accessToken, accessTokenSecret).get(
       "account/verify_credentials",
       err => {
-        if (err) reject()
+        if (err) reject(err)
         else resolve()
       }
     )
@@ -27,7 +27,7 @@ exports.post = (accessToken, accessTokenSecret, tweetBody) =>
         status: tweetBody
       },
       err => {
-        if (err) reject()
+        if (err) reject(err)
         else resolve()
       }
     )

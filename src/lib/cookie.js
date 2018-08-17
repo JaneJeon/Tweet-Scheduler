@@ -13,3 +13,5 @@ exports.decode = event => {
   // strip off 'token='
   return jwt.verify(event.headers.Cookie.substr(6), process.env.JWT_SECRET)
 }
+
+exports.expire = "; expires=Thu, 01 Jan 1970 00:00:00 GMT"

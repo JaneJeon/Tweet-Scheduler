@@ -2,5 +2,6 @@ node_modules
 .*
 !.gitignore
 config/backend.yml
-config/frontend.js
-src/public/client.js
+config/frontend.json
+src/public/movie.mkv
+src/public/*.jpg

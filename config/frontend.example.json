@@ -1,0 +1,11 @@
+{
+  "firebase": {
+    "apiKey": "",
+    "authDomain": "",
+    "databaseURL": "",
+    "projectId": "",
+    "storageBucket": "",
+    "messagingSenderId": ""
+  },
+  "api": "https://${my-endpoint}.execute-api.${aws-region}.amazonaws.com/${stage}"
+}

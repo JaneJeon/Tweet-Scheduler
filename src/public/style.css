@@ -1,0 +1,45 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    padding-top: 3rem;
+    margin-bottom: 6rem;
+    background-color: #FEFEFE;
+}
+
+.card {
+    max-width: 32rem;
+}
+
+.card-link {
+    float: right;
+    margin-left: 1rem;
+}
+
+.delete {
+    color: red;
+}
+
+.delete:hover {
+    color: darkred;
+}
+
+img {
+    cursor: pointer
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* need to be same as body#margin-bottom */
+    height: 6rem;
+    line-height: 6rem;
+}
+
+footer a {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
