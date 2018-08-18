@@ -3,7 +3,11 @@ const AWS = require("aws-sdk"),
   uuid = require("uuid/v4")
 
 const ensureValidTweet = (tweetBody, tweetTime) => {
-  if (tweetBody > 280 || tweetTime <= Math.round(Date.now() / 1000))
+  if (
+    tweetBody.length > 280 ||
+    tweetTime % 60 ||
+    tweetTime <= Math.round(Date.now() / 1000)
+  )
     throw new Error("Invalid tweet parameter(s)")
 }
 
@@ -35,9 +39,9 @@ exports.getTweets = async userId =>
   (await db
     .query({
       TableName: process.env.TWEETS_TABLE,
+      IndexName: process.env.LOCAL_TIME_INDEX,
       KeyConditionExpression: "userId = :id",
-      ExpressionAttributeValues: { ":id": userId },
-      ProjectionExpression: "tweetId, tweetBody, tweetTime"
+      ExpressionAttributeValues: { ":id": userId }
     })
     .promise()).Items
 
@@ -62,12 +66,19 @@ exports.deleteTweet = async (userId, tweetId) =>
     })
     .promise()
 
-exports.scrapeTweets = async time =>
-  (await db
-    .query({
-      TableName: process.env.TWEETS_TABLE,
-      IndexName: process.env.TWEET_TIME_INDEX,
-      KeyConditionExpression: "tweetTime = :time",
-      ExpressionAttributeValues: { ":time": time }
-    })
-    .promise()).Items
+exports.scrapeTweets = async time => {
+  const params = {
+    TableName: process.env.TWEETS_TABLE,
+    IndexName: process.env.GLOBAL_TIME_INDEX,
+    KeyConditionExpression: "tweetTime = :time",
+    ExpressionAttributeValues: { ":time": time }
+  }
+
+  const result = await db.query(params).promise()
+
+  // TODO: continuously re-run queries while still providing output
+  if (result.LastEvaluatedKey)
+    params.ExclusiveStartKey = result.LastEvaluatedKey
+
+  return result.Items
+}

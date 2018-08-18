@@ -5,3 +5,4 @@ config/backend.yml
 config/frontend.json
 src/public/movie.mkv
 src/public/*.jpg
+src/public/client.js

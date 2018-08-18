@@ -14,7 +14,8 @@ provider:
     CONSUMER_KEY: ${self:custom.env.CONSUMER_KEY}
     CONSUMER_SECRET: ${self:custom.env.CONSUMER_SECRET}
     TWEETS_TABLE: ${self:service}-${self:provider.stage}
-    TWEET_TIME_INDEX: tweetTime-global-index
+    LOCAL_TIME_INDEX: local-userId-tweetTime-index
+    GLOBAL_TIME_INDEX: global-tweetTime-index
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -103,11 +104,19 @@ resources:
             KeyType: HASH
           - AttributeName: tweetId
             KeyType: RANGE
-        TimeToLiveSpecification:
-          AttributeName: tweetTime
-          Enabled: true
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.LOCAL_TIME_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: tweetTime
+                KeyType: RANGE
+            Projection:
+              ProjectionType: INCLUDE
+              NonKeyAttributes:
+                - tweetBody
         GlobalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.TWEET_TIME_INDEX}
+          - IndexName: ${self:provider.environment.GLOBAL_TIME_INDEX}
             KeySchema:
               - AttributeName: tweetTime
                 KeyType: HASH
@@ -116,13 +125,16 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
+        TimeToLiveSpecification:
+          AttributeName: tweetTime
+          Enabled: true
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-    # TweetQueue:
-    #   Type: AWS::SQS::Queue
-    #   Properties:
-    #     QueueName: ${self:service}-${self:provider.stage}-queue
+    TweetQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-queue
     LogBucket:
       Type: AWS::S3::Bucket
       Properties:
