@@ -1,11 +1,10 @@
-const route = require("./route")
+const route = require("./route"),
+  { getScript } = require("./browser"),
+  config = require("../../config/frontend.json")
 
 route.redirect()
 
-const { getScript } = require("./browser"),
-  config = require("../../config/frontend.json")
-
-signIn = async () => {
+window.signIn = async () => {
   await getScript("https://www.gstatic.com/firebasejs/5.3.0/firebase-app.js")
   await getScript("https://www.gstatic.com/firebasejs/5.3.0/firebase-auth.js")
 

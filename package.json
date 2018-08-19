@@ -24,7 +24,7 @@
     "uglify-es": "^3.3.9"
   },
   "scripts": {
-    "pkg": "node_modules/.bin/browserify src/client/index.js | node_modules/.bin/uglifyjs > src/public/client.js",
-    "start": "node_modules/.bin/http-server src/public -o"
+    "pkg": "browserify src/client/index.js | uglifyjs -c -m > src/public/client.js",
+    "start": "http-server src/public -o"
   }
 }

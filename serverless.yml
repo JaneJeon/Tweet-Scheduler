@@ -31,6 +31,9 @@ provider:
 package:
   include:
     - config/**
+  exclude:
+    - src/client
+    - src/public
   individually: true
 
 functions:
@@ -70,21 +73,12 @@ functions:
       - http:
           method: DELETE
           path: /tweets/{tweetId}
-  # scrapeTweets:
-  #   handler: src/functions/scrapeTweets.handler
-  #   events:
-  #     - schedule: rate(1 minute)
-  #   memorySize: 512
-  #   timeout: 60
-  # postTweets:
-  #   handler: src/functions/postTweets.handler
-  #   events:
-  #     - sqs:
-  #         arn:
-  #           Fn::GetAtt:
-  #             - TweetQueue
-  #             - Arn
-  #   timeout: 60
+  postTweets:
+    handler: src/functions/scrapeTweets.handler
+    events:
+      - schedule: cron(* * * * ? *)
+    memorySize: 512
+    timeout: 60
 
 resources:
   Resources:
@@ -131,10 +125,6 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-    TweetQueue:
-      Type: AWS::SQS::Queue
-      Properties:
-        QueueName: ${self:service}-${self:provider.stage}-queue
     LogBucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -154,7 +144,7 @@ custom:
     bucketName: ${self:custom.config.siteBucket}
     distributionFolder: src/public
     indexDocument: login.html
-    clientCommand: node_modules/.bin/browserify src/client/index.js | node_modules/.bin/uglifyjs > src/public/client.js
+    clientCommand: yarn pkg
     logging:
       bucket:
         Fn::GetAtt:
