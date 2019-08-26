@@ -7,19 +7,19 @@
   "license": "Apache-2.0",
   "private": false,
   "dependencies": {
-    "jsonwebtoken": "^8.3.0",
+    "jsonwebtoken": "^8.5.1",
     "twitter": "^1.7.1",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "aws-sdk": "^2.291.0",
     "browserify": "^16.5.0",
-    "fullstack-serverless": "^0.5.6",
+    "fullstack-serverless": "^0.6.1",
     "http-server": "^0.11.1",
     "serverless": "^1.50.0",
     "serverless-dynamodb-autoscaling": "^0.6.2",
     "serverless-plugin-aws-alerts": "^1.4.0",
-    "serverless-plugin-optimize": "^3.1.1-rc.1",
+    "serverless-plugin-optimize": "^4.0.0-rc.1",
     "serverless-prune-plugin": "^1.4.0",
     "uglify-es": "^3.3.9"
   },
