@@ -9,7 +9,7 @@
   "dependencies": {
     "jsonwebtoken": "^8.3.0",
     "twitter": "^1.7.1",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "aws-sdk": "^2.291.0",
