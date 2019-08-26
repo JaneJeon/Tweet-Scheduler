@@ -14,7 +14,7 @@
   "devDependencies": {
     "aws-sdk": "^2.291.0",
     "browserify": "^16.5.0",
-    "fullstack-serverless": "^0.5.6",
+    "fullstack-serverless": "^0.6.1",
     "http-server": "^0.11.1",
     "serverless": "^1.50.0",
     "serverless-dynamodb-autoscaling": "^0.6.2",

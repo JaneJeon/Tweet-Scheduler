@@ -2550,9 +2550,9 @@ fs2@^0.3.4:
     memoizee "^0.4.14"
     type "^1.0.1"
 
-fullstack-serverless@^0.5.6:
-  version "0.5.6"
-  resolved "https://registry.yarnpkg.com/fullstack-serverless/-/fullstack-serverless-0.5.6.tgz#c0abb3488dc38bc208000760868b332b0ddd9a8e"
+fullstack-serverless@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/fullstack-serverless/-/fullstack-serverless-0.6.1.tgz#b7b0929068bcb87a03310f051ee89e3bf1756012"
   dependencies:
     async "^2.6.0"
     bluebird "^3.5.1"
